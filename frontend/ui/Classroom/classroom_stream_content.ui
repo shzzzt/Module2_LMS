@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>954</width>
-    <height>529</height>
+    <width>1191</width>
+    <height>497</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -150,8 +150,8 @@ MONDAY - 1:00 - 4:00 PM</string>
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>899</width>
-             <height>234</height>
+             <width>1136</width>
+             <height>227</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -478,7 +478,7 @@ QPushButton:pressed {
   </layout>
  </widget>
  <resources>
-  <include location="../../../../src/font.qrc"/>
+  <include location="../../../../../src/font.qrc"/>
  </resources>
  <connections/>
 </ui>
