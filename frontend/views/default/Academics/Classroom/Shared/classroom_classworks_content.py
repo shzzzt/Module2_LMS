@@ -1,8 +1,10 @@
 from PyQt6 import uic
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QScrollArea, QSizePolicy, QSpacerItem, QMenu, QFrame
 from PyQt6.QtGui import QAction, QPixmap
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 import os
+from view_materials import ViewMaterial
+from view_assessment import ViewAssessment
 
 class ItemWidget(QWidget):
     def __init__(self, icon_path, title_text, date_text, parent=None):
@@ -78,13 +80,15 @@ class ItemWidget(QWidget):
         layout.addWidget(menu_button)
 
 class TopicFrame(QFrame):
+    post_clicked = pyqtSignal(dict)  # Signal to emit item data when clicked
+
     def __init__(self, item_data, parent=None):
         super().__init__(parent)
-        self.setObjectName("topicItemFrame")  # Match UI frame name for styling
+        self.setObjectName(f"topicItemFrame_{id(self)}")  # Unique object name
         self.setMinimumSize(800, 70)
         self.setMaximumHeight(70)  # Limit height per item
         self.setStyleSheet("""
-            QFrame#topicItemFrame {
+            QFrame {
                 background-color: white;
                 border: 1px solid #084924;
                 border-radius: 20px;
@@ -97,6 +101,7 @@ class TopicFrame(QFrame):
         """)
         self.setFrameShape(QFrame.Shape.StyledPanel)
         self.setFrameShadow(QFrame.Shadow.Raised)
+        self.icon_path, self.title, self.date = item_data  # Store item data
         self.setup_ui(item_data)
 
     def setup_ui(self, item_data):
@@ -104,7 +109,6 @@ class TopicFrame(QFrame):
         layout.setSpacing(12)
         layout.setContentsMargins(10, 5, 10, 5)  # Match UI margins
 
-        icon_path, title, date = item_data
         # Icon Label
         icon_label = QLabel(self)
         icon_label.setMinimumSize(32, 32)
@@ -117,12 +121,12 @@ class TopicFrame(QFrame):
                 overflow: hidden;
             }
         """)
-        icon_label.setPixmap(QPixmap(icon_path).scaled(38, 38, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+        icon_label.setPixmap(QPixmap(self.icon_path).scaled(38, 38, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
         icon_label.setScaledContents(True)
         layout.addWidget(icon_label)
 
         # Title Label
-        title_label = QLabel(title, self)
+        title_label = QLabel(self.title, self)
         title_label.setStyleSheet("""
             QLabel {
                 font-size: 14px;
@@ -139,7 +143,7 @@ class TopicFrame(QFrame):
         layout.addItem(spacer)
 
         # Date Label
-        date_label = QLabel(date, self)
+        date_label = QLabel(self.date, self)
         date_label.setStyleSheet("""
             QLabel {
                 font-size: 11px;
@@ -168,9 +172,32 @@ class TopicFrame(QFrame):
         """)
         layout.addWidget(menu_button)
 
+        # Make the entire frame clickable
+        self.setMouseTracking(True)
+
+    def mousePressEvent(self, event):
+        """Emit signal when the frame is clicked"""
+        if event.button() == Qt.MouseButton.LeftButton:
+            print(f"Clicked: {self.title}")  # Debug print
+            post_type = "material" if "Guidelines" in self.title or "Chapter" in self.title else "assessment"
+            post_data = {
+                "type": post_type,
+                "title": self.title,
+                "instructor": "Carlos Fidel Castro",
+                "date": self.date.replace("Posted ", ""),
+                "description": f"Details for {self.title}",
+                "attachment": f"{self.title.lower().replace(' ', '_')}.pdf",
+                "score": "10" if post_type == "assessment" else None
+            }
+            self.post_clicked.emit(post_data)
+        super().mousePressEvent(event)
+
 class TopicWidget(QWidget):
-    def __init__(self, topic_title, items_data, parent=None):
+    def __init__(self, topic_title, items_data, parent_content, parent=None):
         super().__init__(parent)
+        self.parent_content = parent_content  # Reference to ClassroomClassworksContent
+        self.title_label = None  # Store reference to title label
+        self.frames = []  # Store frames for filtering
         self.setup_ui(topic_title, items_data)
 
     def setup_ui(self, topic_title, items_data):
@@ -179,8 +206,8 @@ class TopicWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)  # Remove extra margin, handled by frame
 
         # Topic Title (match topicTitle from UI)
-        title_label = QLabel(topic_title, self)
-        title_label.setStyleSheet("""
+        self.title_label = QLabel(topic_title, self)
+        self.title_label.setStyleSheet("""
             QLabel {
                 font-size: 40px;
                 font-weight: 400;
@@ -189,7 +216,7 @@ class TopicWidget(QWidget):
                 margin-bottom: -10px;
             }
         """)
-        layout.addWidget(title_label)
+        layout.addWidget(self.title_label)
 
         # Separator (mimic UI separator)
         separator = QFrame(self)
@@ -209,13 +236,17 @@ class TopicWidget(QWidget):
         # Add item frames
         for item_data in items_data:
             topic_frame = TopicFrame(item_data)
+            self.frames.append(topic_frame)
             layout.addWidget(topic_frame)
+            topic_frame.post_clicked.connect(self.parent_content.open_post_details)
 
 class ClassroomClassworksContent(QWidget):
     def __init__(self, class_data, user_role):
         super().__init__()
         self.class_data = class_data
         self.user_role = user_role
+        self.untitled_frames = []  # Store untitled frames for filtering
+        self.topic_widgets = []  # Store topic widgets for filtering
         self.load_ui()
         self.setup_role_based_ui()
         self.populate_data()
@@ -225,6 +256,7 @@ class ClassroomClassworksContent(QWidget):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         ui_file = os.path.join(current_dir, '../../../../../ui/Classroom/classroom_classworks_content.ui')
         uic.loadUi(ui_file, self)
+        self.filterComboBox.currentTextChanged.connect(self.filter_posts)
 
     def setup_role_based_ui(self):
         """Setup UI elements based on user role"""
@@ -282,15 +314,17 @@ class ClassroomClassworksContent(QWidget):
 
     def populate_data(self):
         """Populate with hardcoded data and add multiple topics with items"""
-        # Hardcoded topics and items
+        # Hardcoded posts, including untitled ones
+        untitled_posts = [
+            (":/icons/document.svg", "Desktop Project Guidelines", "Posted Aug 18")
+        ]
         topics_data = [
             ("Lecture: Topic 1", [
-                (":/icons/document.svg", "Desktop Project Guidelines", "Posted Aug 18"),
                 (":/icons/document.svg", "Chapter 2: Basics", "Posted Aug 25")
             ]),
             ("Lecture: Topic 2", [
                 (":/icons/document.svg", "Chapter 3: Advanced Concepts", "Posted Sep 1"),
-                (":/icons/document.svg", "Chapter 4: Practical Applications", "Posted Sep 8")
+                (":/icons/document.svg", "Midterm Exam", "Posted Sep 8")
             ])
         ]
 
@@ -299,22 +333,91 @@ class ClassroomClassworksContent(QWidget):
         if scroll_widget:
             topic_layout = scroll_widget.layout()  # topicListLayout
             if topic_layout:
-                # Clear only dynamic widgets, preserve topicTitle and separator
+                # Clear all existing widgets
                 for i in reversed(range(topic_layout.count())):
                     widget = topic_layout.itemAt(i).widget()
-                    if widget and widget.objectName() not in ["topicTitle", "separator", "topicItemFrame", "topicItemFrame_2"]:
+                    if widget:
                         topic_layout.removeWidget(widget)
                         widget.deleteLater()
 
-                # Add topics and items dynamically below the static header
+                # Populate filter combo box
+                self.filterComboBox.clear()
+                self.filterComboBox.addItem("All")
+                self.filterComboBox.addItem("Materials")
+                self.filterComboBox.addItem("Assessments")
+                for topic_title, _ in topics_data:
+                    self.filterComboBox.addItem(topic_title)
+
+                # Add untitled posts as standalone frames at the top
+                for item_data in untitled_posts:
+                    topic_frame = TopicFrame(item_data)
+                    self.untitled_frames.append(topic_frame)
+                    topic_layout.addWidget(topic_frame)
+                    topic_frame.post_clicked.connect(self.open_post_details)
+
+                # Add topic-based posts
                 for topic_title, items_data in topics_data:
-                    topic_widget = TopicWidget(topic_title, items_data)
+                    topic_widget = TopicWidget(topic_title, items_data, self)
+                    self.topic_widgets.append(topic_widget)
                     topic_layout.addWidget(topic_widget)
 
                 # Add a spacer at the end for expansion
                 spacer = QWidget()
                 spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
                 topic_layout.addWidget(spacer)
+
+    def filter_posts(self, filter_text):
+        """Filter posts based on the selected combo box item"""
+        if not filter_text:
+            return
+
+        # Show all by default
+        for frame in self.untitled_frames:
+            frame.setVisible(True)
+        for widget in self.topic_widgets:
+            widget.setVisible(True)
+            for frame in widget.frames:
+                frame.setVisible(True)
+
+        # Apply filter
+        if filter_text == "All":
+            pass  # All are already visible
+        elif filter_text == "Materials":
+            for frame in self.untitled_frames:
+                frame.setVisible("material" in self.get_post_type(frame.title))
+            for widget in self.topic_widgets:
+                widget.setVisible(any("material" in self.get_post_type(frame.title) for frame in widget.frames))
+                for frame in widget.frames:
+                    frame.setVisible("material" in self.get_post_type(frame.title))
+        elif filter_text == "Assessments":
+            for frame in self.untitled_frames:
+                frame.setVisible("assessment" in self.get_post_type(frame.title))
+            for widget in self.topic_widgets:
+                widget.setVisible(any("assessment" in self.get_post_type(frame.title) for frame in widget.frames))
+                for frame in widget.frames:
+                    frame.setVisible("assessment" in self.get_post_type(frame.title))
+        else:  # Topic filter
+            for frame in self.untitled_frames:
+                frame.setVisible(False)
+            for widget in self.topic_widgets:
+                widget.setVisible(widget.title_label.text() == filter_text)  # Use stored title_label
+                if widget.isVisible():
+                    for frame in widget.frames:
+                        frame.setVisible(True)
+
+    def get_post_type(self, title):
+        """Determine post type based on title"""
+        return "material" if "Guidelines" in title or "Chapter" in title else "assessment"
+
+    def open_post_details(self, post_data):
+        """Open the appropriate view based on post type"""
+        if post_data["type"] == "material":
+            view = ViewMaterial(post_data)  # Top-level window
+        elif post_data["type"] == "assessment":
+            view = ViewAssessment(post_data)  # Top-level window
+        view.setMinimumSize(1030, 634)  # Use minimum size to allow resizing
+        view.adjustSize()  # Adjust to content
+        view.show()
 
 if __name__ == "__main__":
     from PyQt6.QtWidgets import QApplication

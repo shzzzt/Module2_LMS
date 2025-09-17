@@ -1,12 +1,19 @@
 from PyQt6 import uic
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QScrollArea, QFrame, QSizePolicy, QSpacerItem
 from PyQt6.QtGui import QPixmap, QPainter, QRegion
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtCore import Qt, QSize, pyqtSignal
 import os
+from view_materials import ViewMaterial
+from view_assessment import ViewAssessment
 
 class PostWidget(QFrame):  # Inherit from QFrame to apply the frame styling
-    def __init__(self, icon_path, title_text, date_text, parent=None):
+    post_clicked = pyqtSignal(dict)  # Signal to emit post data when clicked
+
+    def __init__(self, icon_path, title_text, date_text, post_type="material", parent=None):
         super().__init__(parent)
+        self.post_type = post_type
+        self.title_text = title_text  # Store title for mousePressEvent
+        self.date_text = date_text   # Store date for mousePressEvent
         self.setup_ui(icon_path, title_text, date_text)
 
     def setup_ui(self, icon_path, title_text, date_text):
@@ -22,8 +29,8 @@ class PostWidget(QFrame):  # Inherit from QFrame to apply the frame styling
                 box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             }
         """)
-        self.setFrameShape(QFrame.Shape.StyledPanel)  # Corrected enum syntax
-        self.setFrameShadow(QFrame.Shadow.Raised)     # Corrected enum syntax
+        self.setFrameShape(QFrame.Shape.StyledPanel)
+        self.setFrameShadow(QFrame.Shadow.Raised)
 
         layout = QHBoxLayout(self)
         layout.setSpacing(12)
@@ -43,13 +50,11 @@ class PostWidget(QFrame):  # Inherit from QFrame to apply the frame styling
         """)
         pixmap = QPixmap(icon_path)
         if not pixmap.isNull():
-            # Scale pixmap to fit within 50x50, maintaining aspect ratio
             scaled_pixmap = pixmap.scaled(50, 50, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-            # Create a circular region
             region = QRegion(QSize(50, 50), QRegion.Ellipse)
             icon_label.setMask(region)
             icon_label.setPixmap(scaled_pixmap)
-        icon_label.setScaledContents(True)  # Ensure the pixmap fills the label
+        icon_label.setScaledContents(True)
         layout.addWidget(icon_label)
 
         # Title and Date Layout (matches verticalLayout_3)
@@ -90,6 +95,24 @@ class PostWidget(QFrame):  # Inherit from QFrame to apply the frame styling
         """)
         layout.addWidget(menu_button)
 
+        # Make the entire widget clickable
+        self.setMouseTracking(True)
+
+    def mousePressEvent(self, event):
+        """Emit signal when the widget is clicked"""
+        if event.button() == Qt.MouseButton.LeftButton:
+            post_data = {
+                "type": self.post_type,
+                "title": self.title_text,
+                "instructor": "Carlos Fidel Castro",
+                "date": self.date_text,
+                "description": f"Details for {self.title_text}",
+                "attachment": f"{self.title_text.lower().replace(' ', '_')}.pdf",
+                "score": "10" if self.post_type == "assessment" else None
+            }
+            self.post_clicked.emit(post_data)
+        super().mousePressEvent(event)
+
 class ClassroomStreamContent(QWidget):
     def __init__(self, class_data):
         super().__init__()
@@ -126,22 +149,35 @@ class ClassroomStreamContent(QWidget):
 
                 # Hardcoded multiple posts (recyclable structure)
                 posts_data = [
-                    (":/icons/document.svg", "Desktop Project Guidelines", "Aug 18"),
-                    (":/icons/document.svg", "Midterm Exam", "Sep 15"),
-                    (":/icons/document.svg", "Project Deadline Extended", "Sep 14"),
-                    (":/icons/document.svg", "Practice Test", "Sep 10"),
-                    (":/icons/document.svg", "Testing", "Sep 10")
+                    (":/icons/document.svg", "Desktop Project Guidelines", "Aug 18", "material"),
+                    (":/icons/document.svg", "Midterm Exam", "Sep 15", "assessment"),
+                    (":/icons/document.svg", "Project Deadline Extended", "Sep 14", "material"),
+                    (":/icons/document.svg", "Practice Test", "Sep 10", "assessment"),
+                    (":/icons/document.svg", "Testing", "Sep 10", "material")
                 ]
 
                 # Add posts dynamically to stream_items_layout
-                for icon_path, title, date in posts_data:
-                    post_widget = PostWidget(icon_path, title, date)
+                for icon_path, title, date, post_type in posts_data:
+                    post_widget = PostWidget(icon_path, title, date, post_type)
                     post_layout.addWidget(post_widget)
+                    # Connect the post_clicked signal to open the details view
+                    post_widget.post_clicked.connect(self.open_post_details)
 
                 # Ensure spacer at the end for scrolling (if not already present)
                 if post_layout.count() > 0 and not isinstance(post_layout.itemAt(post_layout.count() - 1).spacerItem(), QSpacerItem):
                     spacer = QSpacerItem(0, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
                     post_layout.addItem(spacer)
+
+    def open_post_details(self, post_data):
+        """Open the appropriate view based on post type"""
+        if post_data["type"] == "material":
+            view = ViewMaterial(post_data)  # Remove parent to make it a top-level window
+        elif post_data["type"] == "assessment":
+            view = ViewAssessment(post_data)  # Remove parent
+        # Adjust size to fit content and avoid clipping
+        view.setMinimumSize(1030, 634)  # Use minimum size to allow resizing
+        view.adjustSize()  # Let Qt adjust based on content
+        view.show()
 
 if __name__ == "__main__":
     from PyQt6.QtWidgets import QApplication
