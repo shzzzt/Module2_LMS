@@ -18,7 +18,9 @@ from PyQt6.QtWidgets import (
 
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QFont, QPalette, QColor, QCursor
-from upload_class_material_widget import UploadClassMaterialPanel
+from ......widgets.upload_class_material_widget import UploadClassMaterialPanel
+from frontend.widgets.dropdown import DropdownMenu
+from frontend.widgets.labeled_section import LabeledSection
 
 class AssessmentForm(QMainWindow):
     def __init__(self):
@@ -38,21 +40,18 @@ class AssessmentForm(QMainWindow):
         # Main widget and layout
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
-        main_layout = QHBoxLayout(main_widget)
-        main_layout.setSpacing(20)
+        main_layout = QVBoxLayout(main_widget)
+        main_layout.setSpacing(5)
         main_layout.setContentsMargins(20, 20, 20, 20)
         
-        # header = self.create_header()
-        # Left panel
-        left_panel = self.create_left_panel()
-        
-        # Right panel
-        right_panel = self.create_right_panel()
-        
+        header = self.create_header()
+        main_body = self.create_body()
+        upload_button = self.create_upload_btn()
 
-        main_layout.addWidget(left_panel, 3)  # Give left panel more space ratio
-        main_layout.addWidget(right_panel, 1)
-
+        main_layout.addWidget(header)
+        main_layout.addWidget(main_body)
+        main_layout.addWidget(upload_button)
+    
     def create_header(self):
         frame = QFrame()
         header_layout = QHBoxLayout(frame)
@@ -92,11 +91,30 @@ class AssessmentForm(QMainWindow):
         header_layout.addWidget(back_label)
 
         return frame
+    
+    def create_body(self):
+        body = QFrame()
+        body_layout = QHBoxLayout(body)
+        body_layout.setSpacing(20)
+        body_layout.setContentsMargins(20, 20, 20, 20)
 
+        # Left panel
+        left_panel = self.create_left_panel()
+        # left_panel = UploadClassMaterialPanel()
         
+        # Right panel
+        right_panel = self.create_right_panel()
+        
+        body_layout.addWidget(left_panel, 3)  # Give left panel more space ratio
+        body_layout.addWidget(right_panel, 1)
+
+        return body
+
     def create_left_panel(self):
         # Left panel container
         left_frame = QFrame()
+        left_frame.setMinimumWidth(800)
+        left_frame.setMinimumHeight(500)
         left_frame.setStyleSheet("""
             QFrame {
                 background-color: white;
@@ -231,7 +249,7 @@ class AssessmentForm(QMainWindow):
         """)
         file_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        drag_label = QLabel("Drag n Drop here")
+        drag_label = QLabel("Drag and Drop here")
         drag_label.setStyleSheet("""
             QLabel {
                 font-size: 14px;
@@ -271,31 +289,8 @@ class AssessmentForm(QMainWindow):
         upload_content_layout.addWidget(or_label)
         upload_content_layout.addWidget(browse_btn)
         
-        # Upload Now button
-        upload_now_btn = QPushButton("Upload Now")
-        upload_now_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #28a745;  /* Green color to match image */
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 15px 24px;  /* Increased padding */
-                font-size: 14px;
-                font-weight: 500;
-                min-height: 20px;
-            }
-            QPushButton:hover {
-                background-color: #218838;
-            }
-            QPushButton:pressed {
-                background-color: #1e7e34;
-            }
-        """)
-        upload_now_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        
         upload_layout.addWidget(upload_label)
         upload_layout.addWidget(upload_frame)
-        upload_layout.addWidget(upload_now_btn)
         layout.addLayout(upload_layout)
         
         # Use expanding spacer that adjusts to available space
@@ -306,17 +301,18 @@ class AssessmentForm(QMainWindow):
     def create_right_panel(self):
         # Right panel container
         right_frame = QFrame()
-        right_frame.setMinimumWidth(300)  # Set minimum width to prevent overlap
+        right_frame.setMinimumWidth(300)
+        right_frame.setMinimumHeight(500)  # Set minimum width to prevent overlap
         right_frame.setStyleSheet("""
             QFrame {
                 background-color: white;
                 border-radius: 8px;
-                border: 1px solid #e0e0e0;
+                border: 1px solid #084924;
             }
         """)
         
         layout = QVBoxLayout(right_frame)
-        layout.setSpacing(20)  # Adjusted spacing for better fit
+        layout.setSpacing(10)  # Adjusted spacing for better fit
         layout.setContentsMargins(20, 25, 20, 25)  # Reduced horizontal margins
         
         # Category section
@@ -534,8 +530,32 @@ class AssessmentForm(QMainWindow):
         layout.addWidget(topic_label)
         layout.addWidget(topic_combo)
         
-        layout.addStretch()
+        # layout.addStretch()
         return right_frame
+    
+    def create_upload_btn(self):
+        upload_now_btn = QPushButton("Upload Now")
+        upload_now_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #28a745;  
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 15px 24px;  
+                font-size: 14px;
+                font-weight: 500;
+                min-height: 20px;
+            }
+            QPushButton:hover {
+                background-color: #218838;
+            }
+            QPushButton:pressed {
+                background-color: #1e7e34;
+            }
+        """)
+        upload_now_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+
+        return upload_now_btn
 
 def main():
     app = QApplication(sys.argv)
@@ -545,3 +565,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+        
