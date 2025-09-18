@@ -449,7 +449,7 @@ class ClassroomClassworksContent(QWidget):
         # Initialize or update ViewMaterial page
         if post_data["type"] == "material":
             if self.material_view is None:
-                self.material_view = ViewMaterial(post_data)
+                self.material_view = ViewMaterial(post_data, self.user_role)
                 self.material_view.back_clicked.connect(self.back_to_main)  # Connect back signal
                 self.material_index = self.stackedWidget.addWidget(self.material_view)
             else:
@@ -459,7 +459,7 @@ class ClassroomClassworksContent(QWidget):
         # Initialize or update ViewAssessment page
         elif post_data["type"] == "assessment":
             if self.assessment_view is None:
-                self.assessment_view = ViewAssessment(post_data)
+                self.assessment_view = ViewAssessment(post_data, self.user_role)
                 self.assessment_view.back_clicked.connect(self.back_to_main)  # Connect back signal
                 self.assessment_index = self.stackedWidget.addWidget(self.assessment_view)
             else:

@@ -1,12 +1,12 @@
 from PyQt6 import uic
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QScrollArea, QFrame, QSizePolicy, QSpacerItem
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QScrollArea, QFrame, QSizePolicy, QSpacerItem, QStackedWidget
 from PyQt6.QtGui import QPixmap, QPainter, QRegion
 from PyQt6.QtCore import Qt, QSize, pyqtSignal
 import os
 from view_materials import ViewMaterial
 from view_assessment import ViewAssessment
 
-class PostWidget(QFrame):  # Inherit from QFrame to apply the frame styling
+class PostWidget(QFrame):
     post_clicked = pyqtSignal(dict)  # Signal to emit post data when clicked
 
     def __init__(self, icon_path, title_text, date_text, post_type="material", parent=None):
@@ -114,27 +114,52 @@ class PostWidget(QFrame):  # Inherit from QFrame to apply the frame styling
         super().mousePressEvent(event)
 
 class ClassroomStreamContent(QWidget):
-    def __init__(self, class_data):
+    def __init__(self, class_data, user_role):
         super().__init__()
         self.class_data = class_data
+        self.user_role = user_role  # Store user_role
+        self.current_post_data = None  # Store current post data
+        self.material_view = None  # Store ViewMaterial widget
+        self.assessment_view = None  # Store ViewAssessment widget
+        self.material_index = None  # Store index for material view
+        self.assessment_index = None  # Store index for assessment view
+        self.main_content = None  # Store main content widget
         self.load_ui()
         self.populate_data()
 
     def load_ui(self):
-        """Load the ClassroomStreamContent UI file"""
+        """Load the ClassroomStreamContent UI file into a main content widget"""
         current_dir = os.path.dirname(os.path.abspath(__file__))
         ui_file = os.path.join(current_dir, '../../../../../ui/Classroom/stream_post.ui')
-        uic.loadUi(ui_file, self)
+        self.main_content = QWidget()
+        uic.loadUi(ui_file, self.main_content)
+
+        # Create stacked widget and main layout
+        self.stackedWidget = QStackedWidget(self)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.stackedWidget)
+
+        # Add main content as index 0
+        self.stackedWidget.addWidget(self.main_content)
+        self.stackedWidget.setCurrentIndex(0)
 
     def populate_data(self):
         """Populate with hardcoded data based on class_data and add multiple posts"""
         # Hardcoded header data (using class_data where possible)
-        self.courseCode_label.setText(self.class_data.get("code", "ITSD81"))
-        self.courseTitle_label.setText("DESKTOP APPLICATION DEVELOPMENT LECTURE")
-        self.courseSection_label.setText(self.class_data.get("section", "BSIT-2C\nMONDAY - 1:00 - 4:00 PM"))
+        course_code_label = self.main_content.findChild(QLabel, "courseCode_label")
+        course_title_label = self.main_content.findChild(QLabel, "courseTitle_label")
+        course_section_label = self.main_content.findChild(QLabel, "courseSection_label")
+        
+        if course_code_label:
+            course_code_label.setText(self.class_data.get("code", "ITSD81"))
+        if course_title_label:
+            course_title_label.setText("DESKTOP APPLICATION DEVELOPMENT LECTURE")
+        if course_section_label:
+            course_section_label.setText(self.class_data.get("section", "BSIT-2C\nMONDAY - 1:00 - 4:00 PM"))
 
         # Get the layout for adding posts (stream_items_layout inside stream_item_container)
-        stream_container = self.findChild(QWidget, "stream_item_container")
+        stream_container = self.main_content.findChild(QWidget, "stream_item_container")
         if stream_container:
             post_layout = stream_container.findChild(QVBoxLayout, "stream_items_layout")
             if post_layout:
@@ -160,24 +185,40 @@ class ClassroomStreamContent(QWidget):
                 for icon_path, title, date, post_type in posts_data:
                     post_widget = PostWidget(icon_path, title, date, post_type)
                     post_layout.addWidget(post_widget)
-                    # Connect the post_clicked signal to open the details view
                     post_widget.post_clicked.connect(self.open_post_details)
 
-                # Ensure spacer at the end for scrolling (if not already present)
+                # Ensure spacer at the end for scrolling
                 if post_layout.count() > 0 and not isinstance(post_layout.itemAt(post_layout.count() - 1).spacerItem(), QSpacerItem):
                     spacer = QSpacerItem(0, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
                     post_layout.addItem(spacer)
 
     def open_post_details(self, post_data):
-        """Open the appropriate view based on post type"""
+        """Switch to the appropriate page in the stacked widget with post details"""
+        self.current_post_data = post_data
+
+        # Initialize or update ViewMaterial page
         if post_data["type"] == "material":
-            view = ViewMaterial(post_data)  # Remove parent to make it a top-level window
+            if self.material_view is None:
+                self.material_view = ViewMaterial(post_data, self.user_role)
+                self.material_view.back_clicked.connect(self.back_to_main)
+                self.material_index = self.stackedWidget.addWidget(self.material_view)
+            else:
+                self.material_view.update_data(post_data)
+            self.stackedWidget.setCurrentIndex(self.material_index)
+
+        # Initialize or update ViewAssessment page
         elif post_data["type"] == "assessment":
-            view = ViewAssessment(post_data)  # Remove parent
-        # Adjust size to fit content and avoid clipping
-        view.setMinimumSize(1030, 634)  # Use minimum size to allow resizing
-        view.adjustSize()  # Let Qt adjust based on content
-        view.show()
+            if self.assessment_view is None:
+                self.assessment_view = ViewAssessment(post_data, self.user_role)
+                self.assessment_view.back_clicked.connect(self.back_to_main)
+                self.assessment_index = self.stackedWidget.addWidget(self.assessment_view)
+            else:
+                self.assessment_view.update_data(post_data)
+            self.stackedWidget.setCurrentIndex(self.assessment_index)
+
+    def back_to_main(self):
+        """Switch back to the main content page (index 0)"""
+        self.stackedWidget.setCurrentIndex(0)
 
 if __name__ == "__main__":
     from PyQt6.QtWidgets import QApplication
@@ -189,7 +230,7 @@ if __name__ == "__main__":
         "section": "BSIT-2C\nMONDAY - 1:00 - 4:00 PM",
         "instructor": "Dr. Maria Santos"
     }
-    stream_page = ClassroomStreamContent(sample_class_data)
-    stream_page.setFixedSize(932, 454)  # Match new UI geometry
+    stream_page = ClassroomStreamContent(sample_class_data, "faculty")
+    stream_page.setFixedSize(932, 454)
     stream_page.show()
     sys.exit(app.exec())
