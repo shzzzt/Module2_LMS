@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import QWidget, QApplication, QVBoxLayout, QHBoxLayout, QMa
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QColor, QPalette, QFont
 import sys
+from modal_create_section import Create_Section_Dialog
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -97,7 +98,6 @@ class MainWindow(QMainWindow):
         self.table.setColumnCount(len(header_names))
         self.table.setHorizontalHeaderLabels(header_names)
 
-        # Style the table
         self.table.setStyleSheet("""
             QTableWidget {
                 background-color: white;
@@ -137,11 +137,9 @@ class MainWindow(QMainWindow):
         
         self.refresh_table_data()
         
-        # Set row height
         self.table.verticalHeader().setDefaultSectionSize(45)
         self.table.verticalHeader().hide()
-
-        # Set alternating row colors
+        
         self.table.setAlternatingRowColors(True)
         self.table.verticalHeader().hide()
 
@@ -162,7 +160,32 @@ class MainWindow(QMainWindow):
     
     #method for maybe creating new window for create sections
     def create_section(self):
-        pass
+        dialog = Create_Section_Dialog(self)
+
+        dialog.section_created.connect(self.on_section_created)
+        
+        # Show dialog
+        dialog.exec()
+    
+    def on_section_created(self, section_data):
+        new_no = str(len(self.row_data) + 1)
+        
+        new_section = [
+            new_no,
+            section_data['section'],
+            section_data['program'],
+            section_data['year'],
+            section_data['type'],
+            section_data['capacity'],
+            section_data['remarks']
+        ]
+        
+        self.row_data.append(new_section)
+        
+        self.refresh_table_data()
+        
+        print(f"New section created: {section_data}") 
+
         
 
 app = QApplication(sys.argv)
