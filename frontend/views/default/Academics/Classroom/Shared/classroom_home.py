@@ -273,6 +273,6 @@ if __name__ == "__main__":
     import sys
     
     app = QApplication(sys.argv)
-    home_page = HomePage(user_role="faculty")
+    home_page = HomePage(user_role="student")
     home_page.show()
     sys.exit(app.exec())

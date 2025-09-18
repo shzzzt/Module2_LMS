@@ -1,13 +1,16 @@
 from PyQt6 import uic
 from PyQt6.QtWidgets import QWidget, QApplication, QMenu
 from PyQt6.QtGui import QAction, QPixmap
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 import os
 
 class ViewAssessment(QWidget):
-    def __init__(self, assessment_data, parent=None):
+    back_clicked = pyqtSignal()  # Signal to return to main page
+
+    def __init__(self, assessment_data, user_role, parent=None):
         super().__init__(parent)
-        self.assessment_data = assessment_data  # e.g., {"title": "Assessment Title", "instructor": "Carlos Fidel Castro", "date": "August 18, 2025", "description": "...", "attachment": "assessment.pdf", "score": "10"}
+        self.assessment_data = assessment_data
+        self.user_role = user_role  # Store user role (e.g., "student", "faculty", "admin")
         self.load_ui()
         self.populate_data()
 
@@ -32,7 +35,10 @@ class ViewAssessment(QWidget):
         self.menuButton.clicked.connect(self.show_menu)
         self.pushButton.clicked.connect(self.send_comment)
 
-        ## Ensure backButton icon is displayed (it's a QLabel with pixmap in UI)
+        # Ensure descriptionEdit is read-only
+        self.descriptionEdit.setReadOnly(True)
+
+        # Ensure backButton icon is displayed (it's a QLabel with pixmap in UI)
         self.backButton.setScaledContents(True)
         pixmap = QPixmap(":/icons/back2.png")
         if pixmap.isNull():
@@ -42,22 +48,19 @@ class ViewAssessment(QWidget):
             self.backButton.setPixmap(pixmap)
             print("back2.png loaded successfully")
 
-        self.backButton.mousePressEvent = self.go_back
-        self.attachmentFrame.mousePressEvent = self.preview_attachment
-        self.menuButton.clicked.connect(self.show_menu)
-        self.pushButton.clicked.connect(self.send_comment)
-
     def go_back(self, event):
-        """Handle back button click to return to stream"""
-        self.close()
+        """Handle back button click to emit back_clicked signal"""
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.back_clicked.emit()
 
     def preview_attachment(self, event):
         """Handle click to preview attachment"""
-        attachment = self.assessment_data.get("attachment", "assessment.pdf")
-        print(f"Previewing {attachment}...")  # Replace with actual preview logic
+        if event.button() == Qt.MouseButton.LeftButton:
+            attachment = self.assessment_data.get("attachment", "assessment.pdf")
+            print(f"Previewing {attachment}...")  # Replace with actual preview logic
 
     def show_menu(self):
-        """Show options menu"""
+        """Show options menu based on user role"""
         menu = QMenu(self)
         menu.setStyleSheet("""
             QMenu {
@@ -74,10 +77,12 @@ class ViewAssessment(QWidget):
                 background-color: #f5f5f5;
             }
         """)
-        edit_action = QAction("Edit", self)
-        delete_action = QAction("Delete", self)
-        menu.addAction(edit_action)
-        menu.addAction(delete_action)
+        if self.user_role in ["faculty", "admin"]:
+            edit_action = QAction("Edit", self)
+            delete_action = QAction("Delete", self)
+            menu.addAction(edit_action)
+            menu.addAction(delete_action)
+        # Optionally, add other actions for all roles here
         button_pos = self.menuButton.mapToGlobal(self.menuButton.rect().bottomLeft())
         menu.exec(button_pos)
 
@@ -87,6 +92,11 @@ class ViewAssessment(QWidget):
         if comment:
             print(f"Sending comment: {comment}")  # Replace with actual comment submission logic
             self.commentBox.clear()
+
+    def update_data(self, assessment_data):
+        """Update the widget with new assessment data"""
+        self.assessment_data = assessment_data
+        self.populate_data()
 
 if __name__ == "__main__":
     import sys
@@ -99,7 +109,7 @@ if __name__ == "__main__":
         "attachment": "quiz1.pdf",
         "score": "10"
     }
-    view_assessment = ViewAssessment(assessment_data)
+    view_assessment = ViewAssessment(assessment_data, "faculty")
     view_assessment.setFixedSize(1030, 634)
     view_assessment.show()
     sys.exit(app.exec())

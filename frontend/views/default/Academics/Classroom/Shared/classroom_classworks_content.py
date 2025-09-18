@@ -1,5 +1,5 @@
 from PyQt6 import uic
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QScrollArea, QSizePolicy, QSpacerItem, QMenu, QFrame
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QScrollArea, QSizePolicy, QSpacerItem, QMenu, QFrame, QStackedWidget, QComboBox
 from PyQt6.QtGui import QAction, QPixmap
 from PyQt6.QtCore import Qt, pyqtSignal
 import os
@@ -247,24 +247,49 @@ class ClassroomClassworksContent(QWidget):
         self.user_role = user_role
         self.untitled_frames = []  # Store untitled frames for filtering
         self.topic_widgets = []  # Store topic widgets for filtering
+        self.current_post_data = None  # Store current post data for page switching
+        self.material_view = None  # Store ViewMaterial widget
+        self.assessment_view = None  # Store ViewAssessment widget
+        self.material_index = None
+        self.assessment_index = None
+        self.main_content = None
         self.load_ui()
         self.setup_role_based_ui()
         self.populate_data()
 
     def load_ui(self):
-        """Load the ClassroomClassworksContent UI file"""
+        """Load the ClassroomClassworksContent UI file into a main content widget"""
         current_dir = os.path.dirname(os.path.abspath(__file__))
         ui_file = os.path.join(current_dir, '../../../../../ui/Classroom/classroom_classworks_content.ui')
-        uic.loadUi(ui_file, self)
-        self.filterComboBox.currentTextChanged.connect(self.filter_posts)
+        self.main_content = QWidget()
+        uic.loadUi(ui_file, self.main_content)
+        
+        # Assign references to main widgets
+        self.filterComboBox = self.main_content.findChild(QComboBox, "filterComboBox")
+        self.topicScrollArea = self.main_content.findChild(QScrollArea, "topicScrollArea")
+        self.createButton = self.main_content.findChild(QPushButton, "createButton")
+        
+        if self.filterComboBox:
+            self.filterComboBox.currentTextChanged.connect(self.filter_posts)
+        
+        # Create stacked widget and main layout
+        self.stackedWidget = QStackedWidget(self)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.stackedWidget)
+        
+        # Add main content as index 0
+        self.stackedWidget.addWidget(self.main_content)
+        self.stackedWidget.setCurrentIndex(0)
 
     def setup_role_based_ui(self):
         """Setup UI elements based on user role"""
-        if self.user_role == "student":
-            self.createButton.hide()
-        else:
-            self.createButton.show()
-            self.createButton.clicked.connect(self.show_create_menu)
+        if self.createButton:
+            if self.user_role == "student":
+                self.createButton.hide()
+            else:
+                self.createButton.show()
+                self.createButton.clicked.connect(self.show_create_menu)
 
     def show_create_menu(self):
         """Show menu for creating material, assessment, or topic"""
@@ -314,6 +339,9 @@ class ClassroomClassworksContent(QWidget):
 
     def populate_data(self):
         """Populate with hardcoded data and add multiple topics with items"""
+        if not self.topicScrollArea:
+            return
+        
         # Hardcoded posts, including untitled ones
         untitled_posts = [
             (":/icons/document.svg", "Desktop Project Guidelines", "Posted Aug 18")
@@ -335,18 +363,21 @@ class ClassroomClassworksContent(QWidget):
             if topic_layout:
                 # Clear all existing widgets
                 for i in reversed(range(topic_layout.count())):
-                    widget = topic_layout.itemAt(i).widget()
-                    if widget:
-                        topic_layout.removeWidget(widget)
-                        widget.deleteLater()
+                    item = topic_layout.itemAt(i)
+                    if item:
+                        widget = item.widget()
+                        if widget:
+                            topic_layout.removeWidget(widget)
+                            widget.deleteLater()
 
                 # Populate filter combo box
-                self.filterComboBox.clear()
-                self.filterComboBox.addItem("All")
-                self.filterComboBox.addItem("Materials")
-                self.filterComboBox.addItem("Assessments")
-                for topic_title, _ in topics_data:
-                    self.filterComboBox.addItem(topic_title)
+                if self.filterComboBox:
+                    self.filterComboBox.clear()
+                    self.filterComboBox.addItem("All")
+                    self.filterComboBox.addItem("Materials")
+                    self.filterComboBox.addItem("Assessments")
+                    for topic_title, _ in topics_data:
+                        self.filterComboBox.addItem(topic_title)
 
                 # Add untitled posts as standalone frames at the top
                 for item_data in untitled_posts:
@@ -386,21 +417,23 @@ class ClassroomClassworksContent(QWidget):
             for frame in self.untitled_frames:
                 frame.setVisible("material" in self.get_post_type(frame.title))
             for widget in self.topic_widgets:
-                widget.setVisible(any("material" in self.get_post_type(frame.title) for frame in widget.frames))
+                has_materials = any("material" in self.get_post_type(frame.title) for frame in widget.frames)
+                widget.setVisible(has_materials)
                 for frame in widget.frames:
                     frame.setVisible("material" in self.get_post_type(frame.title))
         elif filter_text == "Assessments":
             for frame in self.untitled_frames:
                 frame.setVisible("assessment" in self.get_post_type(frame.title))
             for widget in self.topic_widgets:
-                widget.setVisible(any("assessment" in self.get_post_type(frame.title) for frame in widget.frames))
+                has_assessments = any("assessment" in self.get_post_type(frame.title) for frame in widget.frames)
+                widget.setVisible(has_assessments)
                 for frame in widget.frames:
                     frame.setVisible("assessment" in self.get_post_type(frame.title))
         else:  # Topic filter
             for frame in self.untitled_frames:
                 frame.setVisible(False)
             for widget in self.topic_widgets:
-                widget.setVisible(widget.title_label.text() == filter_text)  # Use stored title_label
+                widget.setVisible(widget.title_label.text() == filter_text)
                 if widget.isVisible():
                     for frame in widget.frames:
                         frame.setVisible(True)
@@ -410,21 +443,39 @@ class ClassroomClassworksContent(QWidget):
         return "material" if "Guidelines" in title or "Chapter" in title else "assessment"
 
     def open_post_details(self, post_data):
-        """Open the appropriate view based on post type"""
+        """Switch to the appropriate page in the stacked widget with post details"""
+        self.current_post_data = post_data
+
+        # Initialize or update ViewMaterial page
         if post_data["type"] == "material":
-            view = ViewMaterial(post_data)  # Top-level window
+            if self.material_view is None:
+                self.material_view = ViewMaterial(post_data)
+                self.material_view.back_clicked.connect(self.back_to_main)  # Connect back signal
+                self.material_index = self.stackedWidget.addWidget(self.material_view)
+            else:
+                self.material_view.update_data(post_data)  # Update existing widget
+            self.stackedWidget.setCurrentIndex(self.material_index)
+
+        # Initialize or update ViewAssessment page
         elif post_data["type"] == "assessment":
-            view = ViewAssessment(post_data)  # Top-level window
-        view.setMinimumSize(1030, 634)  # Use minimum size to allow resizing
-        view.adjustSize()  # Adjust to content
-        view.show()
+            if self.assessment_view is None:
+                self.assessment_view = ViewAssessment(post_data)
+                self.assessment_view.back_clicked.connect(self.back_to_main)  # Connect back signal
+                self.assessment_index = self.stackedWidget.addWidget(self.assessment_view)
+            else:
+                self.assessment_view.update_data(post_data)  # Update existing widget
+            self.stackedWidget.setCurrentIndex(self.assessment_index)
+
+    def back_to_main(self):
+        """Switch back to the main content page (index 0)"""
+        self.stackedWidget.setCurrentIndex(0)
 
 if __name__ == "__main__":
     from PyQt6.QtWidgets import QApplication
     import sys
     
     app = QApplication(sys.argv)
-    classworks_page = ClassroomClassworksContent({"class_id": 1}, "faculty")  # Example with faculty role
+    classworks_page = ClassroomClassworksContent({"class_id": 1}, "faculty")
     classworks_page.setFixedSize(940, 530)
     classworks_page.show()
     sys.exit(app.exec())

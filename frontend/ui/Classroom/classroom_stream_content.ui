@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1191</width>
-    <height>497</height>
+    <height>0</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -478,7 +478,7 @@ QPushButton:pressed {
   </layout>
  </widget>
  <resources>
-  <include location="../../../../../src/font.qrc"/>
+  <include location="../../../../../../src/font.qrc"/>
  </resources>
  <connections/>
 </ui>
