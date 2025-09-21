@@ -1,0 +1,14 @@
+<RCC>
+  <qresource prefix="/">
+    <file>icons/back2.png</file>
+    <file>icons/back.png</file>
+    <file>icons/person.png</file>
+    <file>icons/people.svg</file>
+    <file>icons/icons8-document-16.svg</file>
+    <file>icons/free_icon_1 (1).svg</file>
+    <file>icons/doc.svg</file>
+    <file>icons/document (1).svg</file>
+    <file>icons/document.svg</file>
+    <file>icons/baseline-add.svg</file>
+  </qresource>
+</RCC>
