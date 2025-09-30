@@ -1,317 +1,340 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form</class>
- <widget class="QWidget" name="Form">
+ <class>ClassCard</class>
+ <widget class="QFrame" name="ClassCard">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>787</width>
-    <height>435</height>
+    <width>370</width>
+    <height>300</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string>home</string>
+  <property name="minimumSize">
+   <size>
+    <width>340</width>
+    <height>270</height>
+   </size>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
+  <property name="maximumSize">
+   <size>
+    <width>370</width>
+    <height>300</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>ClassCard</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QFrame#ClassCard {
+    background: transparent;
+    border: 1px solid #e0e0e0;
+    border-radius: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	font-family: &quot;Poppins&quot;;
+}</string>
+  </property>
+  <property name="frameShape">
+   <enum>QFrame::Box</enum>
+  </property>
+  <layout class="QVBoxLayout" name="main_layout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <widget class="QWidget" name="content" native="true">
-       <property name="styleSheet">
-        <string notr="true">background-color: #F7F7F7;
-border-radius: 20px;</string>
-       </property>
-       <layout class="QGridLayout" name="gridLayout_2">
-        <item row="0" column="0">
-         <layout class="QGridLayout" name="gridLayout">
-          <item row="0" column="0" alignment="Qt::AlignLeft">
-           <widget class="QFrame" name="cardFrame">
-            <property name="minimumSize">
-             <size>
-              <width>310</width>
-              <height>300</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>310</width>
-              <height>300</height>
-             </size>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">background-color: white;
-border-radius: 20px;
-</string>
-            </property>
-            <property name="frameShape">
-             <enum>QFrame::StyledPanel</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Raised</enum>
-            </property>
-            <widget class="QLabel" name="label">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>10</y>
-               <width>291</width>
-               <height>151</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="pixmap">
-              <pixmap>../../../../img_bookclub.jpg</pixmap>
-             </property>
-             <property name="scaledContents">
-              <bool>true</bool>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_5">
-             <property name="geometry">
-              <rect>
-               <x>190</x>
-               <y>110</y>
-               <width>101</width>
-               <height>101</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">border-radius: 50%;
-background-color: #FDC601;</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_2">
-             <property name="geometry">
-              <rect>
-               <x>30</x>
-               <y>26</y>
-               <width>109</width>
-               <height>64</height>
-              </rect>
-             </property>
-             <property name="autoFillBackground">
-              <bool>false</bool>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">color: #ffffff;
-font-size: 36px;
-background-color: transparent;
-font-family: &quot;Poppins&quot;;
-</string>
-             </property>
-             <property name="text">
-              <string>ITSD81</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_4">
-             <property name="geometry">
-              <rect>
-               <x>30</x>
-               <y>110</y>
-               <width>106</width>
-               <height>22</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">color: white;
-font-family: &quot;Poppins&quot;;
-font-size: 12px;
-background-color: transparent;</string>
-             </property>
-             <property name="text">
-              <string>Neil John Jomaya</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_3">
-             <property name="geometry">
-              <rect>
-               <x>30</x>
-               <y>80</y>
-               <width>70</width>
-               <height>28</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">color: white;
-font-family: &quot;Poppins&quot;;
-font-size: 16px;
-background-color: transparent;
-</string>
-             </property>
-             <property name="text">
-              <string>BSIT - 3C</string>
-             </property>
-            </widget>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>50</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="0" column="1">
-           <widget class="QFrame" name="cardFrame_2">
-            <property name="minimumSize">
-             <size>
-              <width>310</width>
-              <height>200</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>310</width>
-              <height>300</height>
-             </size>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">background-color: white;
-border-radius: 20px;
-</string>
-            </property>
-            <property name="frameShape">
-             <enum>QFrame::StyledPanel</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Raised</enum>
-            </property>
-            <widget class="QLabel" name="label_6">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>10</y>
-               <width>291</width>
-               <height>151</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="pixmap">
-              <pixmap>../../../../img_bookclub.jpg</pixmap>
-             </property>
-             <property name="scaledContents">
-              <bool>true</bool>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_7">
-             <property name="geometry">
-              <rect>
-               <x>190</x>
-               <y>110</y>
-               <width>101</width>
-               <height>101</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">border-radius: 50%;
-background-color: #FDC601;</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_8">
-             <property name="geometry">
-              <rect>
-               <x>30</x>
-               <y>26</y>
-               <width>121</width>
-               <height>64</height>
-              </rect>
-             </property>
-             <property name="autoFillBackground">
-              <bool>false</bool>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">color: #ffffff;
-font-size: 36px;
-background-color: transparent;
-font-family: &quot;Poppins&quot;;
-</string>
-             </property>
-             <property name="text">
-              <string>ITSD83</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_9">
-             <property name="geometry">
-              <rect>
-               <x>30</x>
-               <y>110</y>
-               <width>121</width>
-               <height>22</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">color: white;
-font-family: &quot;Poppins&quot;;
-font-size: 12px;
-background-color: transparent;</string>
-             </property>
-             <property name="text">
-              <string>Mindell Rey Aguirre</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_10">
-             <property name="geometry">
-              <rect>
-               <x>30</x>
-               <y>80</y>
-               <width>70</width>
-               <height>28</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">color: white;
-font-family: &quot;Poppins&quot;;
-font-size: 16px;
-background-color: transparent;
-</string>
-             </property>
-             <property name="text">
-              <string>BSIT - 3C</string>
-             </property>
-            </widget>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <spacer name="verticalSpacer">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
+    <widget class="QFrame" name="header_frame">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>80</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>140</height>
+      </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QFrame#header_frame {
+    background-color: #489052;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    border-bottom: none;
+	font-family: &quot;Poppins&quot;;
+}</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <layout class="QHBoxLayout" name="header_layout">
+      <property name="leftMargin">
+       <number>16</number>
+      </property>
+      <property name="topMargin">
+       <number>16</number>
+      </property>
+      <property name="rightMargin">
+       <number>16</number>
+      </property>
+      <property name="bottomMargin">
+       <number>16</number>
+      </property>
+      <item>
+       <layout class="QVBoxLayout" name="course_info_layout">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>15</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="course_code_label">
+          <property name="styleSheet">
+           <string notr="true">QLabel {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 36px;
+    background: transparent;
+	font-family: &quot;Poppins&quot;;
+}</string>
+          </property>
+          <property name="text">
+           <string>ITSD81</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="course_code_section_label">
+          <property name="styleSheet">
+           <string notr="true">QLabel {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    background: transparent;
+	font-family: &quot;Poppins&quot;;
+}</string>
+          </property>
+          <property name="text">
+           <string>BSIT 3C</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="instructor_label">
+          <property name="styleSheet">
+           <string notr="true">QLabel {
+    color: white;
+    font-size: 16px;
+    font-weight: 400;
+	font-family: &quot;Poppins&quot;;
+	background: transparent;
+	
+}</string>
+          </property>
+          <property name="text">
+           <string>Dr. Maria Santos</string>
+          </property>
+         </widget>
         </item>
        </layout>
-      </widget>
-     </item>
-    </layout>
+      </item>
+      <item>
+       <spacer name="header_spacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="profile_pic_label">
+        <property name="minimumSize">
+         <size>
+          <width>80</width>
+          <height>80</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>80</width>
+          <height>80</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QLabel#profile_pic_label {
+    background-color: #FFC107;
+    border-radius: 40px;
+    color: white;
+    font-weight: bold;
+    font-size: 24px;
+}</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="pixmap">
+         <pixmap resource="../../../../../src/icons.qrc">:/icons/person.png</pixmap>
+        </property>
+        <property name="scaledContents">
+         <bool>true</bool>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="content_frame">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QFrame {
+    background-color: white;
+	font-family: &quot;Poppins&quot;;
+	border: none;
+	border-bottom-left-radius: 20px;
+	border-bottom-right-radius: 20px;
+}</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <layout class="QVBoxLayout" name="content_layout">
+      <property name="leftMargin">
+       <number>16</number>
+      </property>
+      <property name="topMargin">
+       <number>16</number>
+      </property>
+      <property name="rightMargin">
+       <number>16</number>
+      </property>
+      <property name="bottomMargin">
+       <number>12</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="recent_posts_label">
+        <property name="styleSheet">
+         <string notr="true">QLabel {
+    color: #999;
+    font-size: 11px;
+    margin-top: 8px;
+    font-style: italic;
+}</string>
+        </property>
+        <property name="text">
+         <string>recent post..</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="content_spacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="options_layout">
+        <item>
+         <spacer name="options_spacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="options_button">
+          <property name="minimumSize">
+           <size>
+            <width>24</width>
+            <height>24</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>40</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="baseSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QPushButton {
+    background: transparent;
+    border: none;
+    color: #666;
+    font-size: 30px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #f0f0f0;
+    border-radius: 12px;
+}</string>
+          </property>
+          <property name="text">
+           <string>⋮</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
    </item>
   </layout>
  </widget>
  <resources>
-  <include location="../../../../src/font.qrc"/>
+  <include location="../../../../../src/icons.qrc"/>
+  <include location="../../../../../src/font.qrc"/>
  </resources>
  <connections/>
 </ui>
